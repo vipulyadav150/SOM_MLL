@@ -18,7 +18,7 @@ def filter_data():
         csv_reader = csv.reader(f)
         for line in csv_reader:
             # print(line[-6:])
-            train_label = [x for x in line[truncate_value:]]
+            train_label = [float(x) for x in line[truncate_value:]]
             data = line[:truncate_value]
             new_train.append(data)
             training_labels.append(train_label)
@@ -33,11 +33,12 @@ def filter_data():
 
 
 
+
     with open(test_set, 'r+') as f1:
         csv_reader2 = csv.reader(f1)
         for line in csv_reader2:
             # print(line[-6:])
-            test_label = [x for x in line[-6:]]
+            test_label = [float(x) for x in line[-6:]]
             test = line[:truncate_value]
             new_test.append(test)
             testing_labels.append(test_label)

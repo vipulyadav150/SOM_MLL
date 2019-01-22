@@ -26,6 +26,7 @@ tests = fetch_tests()
 # print(MAX_CLUSTERS,VEC_LEN,INPUT_PATTERNS)
 
 
+# print(training_labels)
 
 class SOM_Class:
     def __init__(self, vectorLength, maxClusters, numPatterns, numTests, minimumAlpha, weightArray, maxIterations,
@@ -126,72 +127,74 @@ class SOM_Class:
 
         return
 
-    # def classify(self, tests, map_dict):
-    #     threshold = 0.5
-    #     sum_dict = dict()
-    #     prototypeVector = list()
-    #     numInstances = dict()  # Dictionary to hold number of instances mapped to the neuron
-    #     for key in map_dict:
-    #         c = 0
-    #         for x in map_dict[key]:
-    #             c = c + 1
-    #         numInstances[key] = c
-    #     print(numInstances)
-    #
-    #     # Calculating averages of labels mapped to each neuron
-    #     for key in map_dict:
-    #         sum_list = [sum(x) / numInstances[key] for x in zip(*map_dict[key])]
-    #         if key not in sum_dict:
-    #             sum_dict[key] = []
-    #             sum_dict[key].append(sum_list)
-    #         else:
-    #             sum_dict[key].append(sum_list)
-    #
-    #     print(sum_dict)
-    #     v = list()  # v vector
-    #     for i in range(self.mMaxClusters):
-    #         v.append([0.0] * self.mVectorLen)
-    #     print(v)
-    #     # for deterministic prediction , set threshold = 0.5: if > 0.5 then 1 else 0
-    #     for key in sum_dict:
-    #         numNeuron = key
-    #         for x in sum_dict[key]:
-    #             v[numNeuron] = x
-    #     print(v)
-    #
-    #     for i in range(len(v)):
-    #         for j in range(self.mVectorLen):
-    #             if (v[i][j] >= 0.5):
-    #                 v[i][j] = 1
-    #             else:
-    #                 v[i][j] = 0
-    #     print(v)
-    #
-    #     # In v vector the vector at position say(x) represents the threshold calculated average of labels of instances for that neuron number
-    #
-    #     # pick up test instances
-    #     print("Classification results :")
-    #     for i in tests:  # i is test instance
-    #         matchFlag = 0
-    #         for x in v:
-    #             if i == x:
-    #                 matchFlag = 1
-    #                 ind = v.index(x)  # ind is the neuron number to which the test should n=be mapped
-    #                 print(i, end=' ')
-    #                 print(": falls under category" + str(ind))
-    #
-    #         if (matchFlag == 0):
-    #             print("Test Instance", end=' ')
-    #             print(i, end=" ")
-    #             print("has no match")
+    def classify(self, tests, map_dict , train_lab_dict):
+        threshold = 0.5
+        sum_dict = dict()
+        prototypeVector = list()
+        numInstances = dict()  # Dictionary to hold number of instances mapped to the neuron
+        for key in map_dict:
+            c = 0
+            for x in map_dict[key]:
+                c = c + 1
+            numInstances[key] = c
+        print(numInstances)
+
+        # Calculating averages of labels mapped to each neuron
+        for key in train_lab_dict:
+            sum_list = [sum(x) / numInstances[key] for x in zip(*train_lab_dict[key])]
+            if key not in sum_dict:
+                sum_dict[key] = []
+                sum_dict[key].append(sum_list)
+            else:
+                sum_dict[key].append(sum_list)
+
+        print(sum_dict)
+        v = list()  # v vector
+        for i in range(self.mMaxClusters):
+            v.append([0.0] * len(training_labels[0]))
+        print(v)
+        # for deterministic prediction , set threshold = 0.5: if > 0.5 then 1 else 0
+        for key in sum_dict:
+            numNeuron = key
+            for x in sum_dict[key]:
+                v[numNeuron] = x
+        print(v)
+
+        for i in range(len(v)):
+            for j in range(len(training_labels[0])):
+                if (v[i][j] >= threshold):
+                    v[i][j] = 1
+                else:
+                    v[i][j] = 0
+        print(v)
+        return v
+        # In v vector the vector at position say(x) represents the threshold calculated average of labels of instances for that neuron number
+
+        # pick up test instances
+        # print("Classification results :")
+        # for i in tests:  # i is test instance
+        #     matchFlag = 0
+        #     for x in v:
+        #         if i == x:
+        #             matchFlag = 1
+        #             ind = v.index(x)  # ind is the neuron number to which the test should n=be mapped
+        #             print(i, end=' ')
+        #             print(": falls under category" + str(ind))
+        #
+        #     if (matchFlag == 0):
+        #         print("Test Instance", end=' ')
+        #         print(i, end=" ")
+        #         print("has no match")
 
     def print_results(self, patternArray, testArray):
         # Printing the clusters created
 
         map_dict = dict()  # dictn to hold mapped vwctors along with respective neurons
+        train_lab_dict = dict()
         print("Clusters for training input: \n")
         for i in range(self.mNumPatterns):
             map_list = list()  # list to hold mapped instances to a particular neuron
+            train_lab_list = list()
             self.compute_input(patternArray, i)
             dMin = self.get_minimum(self.d)
 
@@ -199,6 +202,13 @@ class SOM_Class:
             for j in range(self.mVectorLen):
                 map_list.append(patternArray[i][j])
                 print(str(patternArray[i][j]) + ", ")
+            for k in range(len(training_labels[0])):
+                train_lab_list.append(training_labels[i][k])
+            if dMin not in train_lab_dict:
+                train_lab_dict[dMin] = []
+                train_lab_dict[dMin].append(train_lab_list)
+            else:
+                train_lab_dict[dMin].append(train_lab_list)
 
             print(") fits into category " + str(dMin) + "\n")
             if dMin not in map_dict:
@@ -218,34 +228,42 @@ class SOM_Class:
 
             print("\n")
 
+        print("Dictionary - Maping of instances to respective neurons :")
+        print(map_dict)
+
+        return map_dict, train_lab_dict
+
+    def post_train(self,testArray,v):
         # Print post-training tests.
+        post_test_labels = [[] for i in range(self.mNumTests)]
         print("------------------------------------------------------------------------\n")
         print("Categorized test input:\n")
         for i in range(self.mNumTests):
             self.compute_input(testArray, i)
 
             dMin = self.get_minimum(self.d)
-
+            if dMin is not None:
+                post_test_labels[i]=v[dMin]
+            else:
+                post_test_labels[i]=[]
             print("Vector (")
             for j in range(self.mVectorLen):
                 print(str(testArray[i][j]) + ", ")
 
             print(") fits into category " + str(dMin) + "\n")
+        return post_test_labels
 
-        print("Dictionary - Maping of instances to respective neurons :")
-        print(map_dict)
-
-        return map_dict
 
 if __name__ == '__main__':
     filter_data()
     som = SOM_Class(VEC_LEN, MAX_CLUSTERS, INPUT_PATTERNS, INPUT_TESTS, MIN_ALPHA, w, MAX_ITERATIONS, SIGMA,
                      INITIAL_LEARNING_RATE, INITIAL_RADIUS)
     som.training(pattern)
-    map_dict = som.print_results(pattern, tests)
-    # som.classify(tests, map_dict)
-
-
+    map_dict, train_lab_dict = som.print_results(pattern, tests)
+    v = som.classify(tests, map_dict , train_lab_dict)
+    predicted_labels = som.post_train(tests,v)
+    print(predicted_labels)
+    print(len(predicted_labels))
 
 
 
