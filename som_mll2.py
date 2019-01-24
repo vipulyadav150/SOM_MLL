@@ -7,30 +7,41 @@ import math
 
 # filter_data()
 
-pattern = fetch_data()
-(
-    MAX_CLUSTERS,
-    VEC_LEN,
-    INPUT_PATTERNS,
-    INPUT_TESTS,
-    MIN_ALPHA,
-    MAX_ITERATIONS,
-    SIGMA,
-    INITIAL_LEARNING_RATE,
-    INITIAL_RADIUS
-) = initialize_variables(pattern)
+# pattern = fetch_data()
+# (
+#     MAX_CLUSTERS,
+#     VEC_LEN,
+#     INPUT_PATTERNS,
+#     INPUT_TESTS,
+#     MIN_ALPHA,
+#     MAX_ITERATIONS,
+#     SIGMA,
+#     INITIAL_LEARNING_RATE,
+#     INITIAL_RADIUS
+# ) = initialize_variables(pattern)
 
-w = random_weights(pattern,MAX_CLUSTERS,VEC_LEN)
-tests = fetch_tests()
+
+# w = random_weights(pattern,MAX_CLUSTERS,VEC_LEN)
+# tests = fetch_tests()
 # print(len(tests[3]))
 # print(MAX_CLUSTERS,VEC_LEN,INPUT_PATTERNS)
-
-
 # print(training_labels)
 
 class SOM_Class:
     def __init__(self, vectorLength, maxClusters, numPatterns, numTests, minimumAlpha, weightArray, maxIterations,
                  sigma, initialAlpha, initialSigma):
+        """
+        :param vectorLength:
+        :param maxClusters:
+        :param numPatterns:
+        :param numTests:
+        :param minimumAlpha:
+        :param weightArray:
+        :param maxIterations:
+        :param sigma:
+        :param initialAlpha:
+        :param initialSigma:
+        """
         self.mVectorLen = vectorLength
         self.mMaxClusters = maxClusters
         self.mNumPatterns = numPatterns
@@ -45,7 +56,15 @@ class SOM_Class:
         self.mInitialSigma = initialSigma
         return
 
+
+
+
     def compute_input(self, vectorArray, vectorNumber):
+        """
+        :param vectorArray:
+        :param vectorNumber:
+        :return:
+        """
         print(len(w),len(vectorArray))
         self.d = [0.0] * self.mMaxClusters
         print(self.mMaxClusters,self.mVectorLen)
@@ -118,10 +137,10 @@ class SOM_Class:
                 self.update_weights(i, dMin, patternArray)
 
 
-            self.mAlpha = self.mInitialAlpha * (1 - (iterations / self.maxIterations))
-
-            self.sigma = self.mInitialSigma * (1 - (iterations / self.maxIterations))
-
+            self.mAlpha = self.mInitialAlpha * math.exp((1 - (iterations / self.maxIterations)))
+            print("Learning Rate:"+str(self.mAlpha))
+            self.sigma = self.mInitialSigma * math.exp((1 - (iterations / self.maxIterations)))
+            print("Radius :" + str(self.sigma))
         print("Iterations" + str(iterations) + '\n')
 
 
@@ -253,17 +272,58 @@ class SOM_Class:
             print(") fits into category " + str(dMin) + "\n")
         return post_test_labels
 
+    def evaluate(self, predicted_labels, testing_labels):
+        p = 0
+        #Testing precision
+        for x in range(len(predicted_labels)):
+            if predicted_labels[x] == testing_labels[x]:
+                p+=1
+
+
+        return float(float(p)/len(predicted_labels))
+
+
+
 
 if __name__ == '__main__':
-    filter_data()
+    # filter_data()
+    pattern = fetch_data()
+    (
+        MAX_CLUSTERS,
+        VEC_LEN,
+        INPUT_PATTERNS,
+        INPUT_TESTS,
+        MIN_ALPHA,
+        MAX_ITERATIONS,
+        SIGMA,
+        INITIAL_LEARNING_RATE,
+        INITIAL_RADIUS
+    ) = initialize_variables(pattern)
+    w = random_weights(pattern, MAX_CLUSTERS, VEC_LEN)
+    tests = fetch_tests()
     som = SOM_Class(VEC_LEN, MAX_CLUSTERS, INPUT_PATTERNS, INPUT_TESTS, MIN_ALPHA, w, MAX_ITERATIONS, SIGMA,
                      INITIAL_LEARNING_RATE, INITIAL_RADIUS)
     som.training(pattern)
     map_dict, train_lab_dict = som.print_results(pattern, tests)
     v = som.classify(tests, map_dict , train_lab_dict)
     predicted_labels = som.post_train(tests,v)
+    print("Predicted labels : " + str(len(predicted_labels)))
     print(predicted_labels)
-    print(len(predicted_labels))
+
+    for x in range(len(predicted_labels)):
+        for y in range(LABEL_COUNT):
+            predicted_labels[x][y] = float(predicted_labels[x][y])
+    print("Predicted labels : " + str(len(predicted_labels)))
+    print(predicted_labels)
+    print("Testing actual labels :" + str(len(testing_labels)))
+    print(testing_labels)
+    precision = som.evaluate(predicted_labels,testing_labels)
+    print(precision)
+
+
+
+
+
 
 
 
