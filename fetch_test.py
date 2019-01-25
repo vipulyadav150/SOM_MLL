@@ -15,7 +15,7 @@ def fetch_tests():
     tests = [e for e in tests if e]
 
 
-    print("Tests patterns available :" + str(len(tests)))
+    # print("Tests patterns available :" + str(len(tests)))
 
 
     return tests

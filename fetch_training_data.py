@@ -15,7 +15,7 @@ def fetch_data():
     patterns = [e for e in patterns if e]
 
 
-    print("Training patterns available :" + str(len(patterns)))
+    # print("Training patterns available :" + str(len(patterns)))
     # print(patterns)
     # for x in patterns:
     #     print(x)

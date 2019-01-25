@@ -53,7 +53,7 @@ class SOM_Class:
         self.maxIterations = maxIterations
         self.sigma = SIGMA
         self.mInitialAlpha = initialAlpha
-        self.mInitialSigma = initialSigma
+        self.mInitialSigma = sigma
         return
 
 
@@ -65,18 +65,19 @@ class SOM_Class:
         :param vectorNumber:
         :return:
         """
-        print(len(w),len(vectorArray))
+        # print(len(w),len(vectorArray))
         self.d = [0.0] * self.mMaxClusters
-        print(self.mMaxClusters,self.mVectorLen)
+        # print(self.mMaxClusters,self.mVectorLen)
         for i in range(self.mMaxClusters):
             for j in range(self.mVectorLen):
                 self.d[i] = self.d[i] + math.pow((self.w[i][j] - vectorArray[vectorNumber][j]), 2)
+            self.d[i]=math.sqrt(self.d[i])
                 # print(vectorNumber,i,j)
                 # print(self.d)
                 # print(self.d)
 
 
-        print(self.d)
+        # print(self.d)
         return
 
 
@@ -107,14 +108,14 @@ class SOM_Class:
                     self.mAlpha * 1 * (patternArray[vectorNumber][l] - self.w[dMin][l]))
         # Now search for neighbors
         dis = 0.00
-        print('MAX :' + str(self.mMaxClusters))
+        # print('MAX :' + str(self.mMaxClusters))
         for i in range(self.mMaxClusters):
             for j in range(self.mVectorLen):
                 if (i != dMin):
                     dis = dis + math.pow((self.w[dMin][j] - self.w[i][j]), 2)
                 else:
                     continue
-
+            dis = math.sqrt(dis)
             # Consider as neighbor if distance is less than sigma
 
             if (dis < self.sigma):
@@ -128,6 +129,7 @@ class SOM_Class:
         return
 
     def training(self, patternArray):
+        print("Entered training")
         iterations = 0
         while (iterations != self.maxIterations):
             iterations = iterations + 1
@@ -136,12 +138,14 @@ class SOM_Class:
                 dMin = self.get_minimum(self.d)
                 self.update_weights(i, dMin, patternArray)
 
-
-            self.mAlpha = self.mInitialAlpha * math.exp((1 - (iterations / self.maxIterations)))
+            if self.mAlpha > 0.01:
+                self.mAlpha = self.mInitialAlpha /((1 + (iterations / self.maxIterations)))
             print("Learning Rate:"+str(self.mAlpha))
-            self.sigma = self.mInitialSigma * math.exp((1 - (iterations / self.maxIterations)))
+
+            if self.sigma > -1*(self.mInitialSigma):
+                self.sigma = self.mInitialSigma / ((1 + (iterations / self.maxIterations)))
             print("Radius :" + str(self.sigma))
-        print("Iterations" + str(iterations) + '\n')
+            print("Iterations" + str(iterations) + '\n')
 
 
         return

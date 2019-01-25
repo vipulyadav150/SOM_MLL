@@ -4,7 +4,7 @@ patterns = fetch_data()
 w = list()
 def random_weights(patterns,max_clusters,vector_length):
     # print(patterns)
-    print(max_clusters)
+    # print(max_clusters)
     flag = 0
     while(flag<max_clusters):
         random_instance = random.choice(patterns)
@@ -25,5 +25,5 @@ def random_weights(patterns,max_clusters,vector_length):
     #         w.append(random_instance)
     #         print(x, len(w))
 
-    print(len(w))
+    # print(len(w))
     return w

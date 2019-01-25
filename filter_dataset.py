@@ -23,8 +23,8 @@ def filter_data():
             new_train.append(data)
             training_labels.append(train_label)
 
-        print(training_labels)
-        print(len(new_train))
+        # print(training_labels)
+        # print(len(new_train))
     with open('new_train.csv','w') as w:
         wtr = csv.writer(w)
         for x in new_train:
@@ -42,8 +42,8 @@ def filter_data():
             test = line[:truncate_value]
             new_test.append(test)
             testing_labels.append(test_label)
-        print(testing_labels)
-        print(len(new_test))
+        # print(testing_labels)
+        # print(len(new_test))
     with open(new_testing_set,'w') as w1:
         wtr1 = csv.writer(w1)
         for y in new_test:
